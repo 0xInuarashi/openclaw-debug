@@ -158,6 +158,11 @@ const coreEntries: CoreCliEntry[] = [
         description: "Manage isolated agents (workspaces, auth, routing)",
         hasSubcommands: true,
       },
+      {
+        name: "chat",
+        description: "Start a persistent interactive chat session with the embedded agent",
+        hasSubcommands: false,
+      },
     ],
     register: async ({ program, ctx }) => {
       const mod = await import("./register.agent.js");
