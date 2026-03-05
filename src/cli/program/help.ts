@@ -63,6 +63,9 @@ export function configureProgramHelp(program: Command, ctx: ProgramContext) {
     );
 
   program.option("--no-color", "Disable ANSI colors", false);
+  program.option("--debug", "Print debug info for every agent step to stderr", false);
+  program.option("--raw", "Print raw LLM request and response payloads to stderr", false);
+  program.option("--tool-confirm", "Prompt y/n on stderr before every tool call", false);
   program.helpOption("-h, --help", "Display help for command");
   program.helpCommand("help [command]", "Display help for command");
 
