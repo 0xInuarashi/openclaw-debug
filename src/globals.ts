@@ -3,6 +3,9 @@ import { theme } from "./terminal/theme.js";
 
 let globalVerbose = false;
 let globalYes = false;
+let globalDebug = false;
+let globalRaw = false;
+let globalToolConfirm = false;
 
 export function setVerbose(v: boolean) {
   globalVerbose = v;
@@ -44,6 +47,30 @@ export function setYes(v: boolean) {
 
 export function isYes() {
   return globalYes;
+}
+
+export function setDebugMode(v: boolean) {
+  globalDebug = v;
+}
+
+export function isDebugMode() {
+  return globalDebug;
+}
+
+export function setRawMode(v: boolean) {
+  globalRaw = v;
+}
+
+export function isRawMode() {
+  return globalRaw;
+}
+
+export function setToolConfirm(v: boolean) {
+  globalToolConfirm = v;
+}
+
+export function isToolConfirm() {
+  return globalToolConfirm;
 }
 
 export const success = theme.success;

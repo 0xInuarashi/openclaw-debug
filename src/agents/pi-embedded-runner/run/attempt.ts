@@ -41,6 +41,7 @@ import {
   listChannelSupportedActions,
   resolveChannelMessageToolHints,
 } from "../../channel-tools.js";
+import { debugPrint, wrapStreamFnDebugRaw, wrapToolWithConfirm } from "../../debug-mode.js";
 import { DEFAULT_CONTEXT_TOKENS } from "../../defaults.js";
 import { resolveOpenClawDocsPath } from "../../docs-path.js";
 import { isTimeoutError } from "../../failover-error.js";
@@ -663,6 +664,14 @@ export async function runEmbeddedAttempt(
   log.debug(
     `embedded run start: runId=${params.runId} sessionId=${params.sessionId} provider=${params.provider} model=${params.modelId} thinking=${params.thinkLevel} messageChannel=${params.messageChannel ?? params.messageProvider ?? "unknown"}`,
   );
+  debugPrint("embedded run start", {
+    runId: params.runId,
+    sessionId: params.sessionId,
+    provider: params.provider,
+    model: params.modelId,
+    thinking: params.thinkLevel,
+    messageChannel: params.messageChannel ?? params.messageProvider ?? "unknown",
+  });
 
   await fs.mkdir(resolvedWorkspace, { recursive: true });
 
@@ -794,7 +803,8 @@ export async function runEmbeddedAttempt(
             params.requireExplicitMessageTarget ?? isSubagentSessionKey(params.sessionKey),
           disableMessageTool: params.disableMessageTool,
         });
-    const tools = sanitizeToolsForGoogle({ tools: toolsRaw, provider: params.provider });
+    const toolsConfirmed = toolsRaw.map(wrapToolWithConfirm);
+    const tools = sanitizeToolsForGoogle({ tools: toolsConfirmed, provider: params.provider });
     const allowedToolNames = collectAllowedToolNames({
       tools,
       clientTools: params.clientTools,
@@ -1275,6 +1285,8 @@ export async function runEmbeddedAttempt(
         );
       }
 
+      activeSession.agent.streamFn = wrapStreamFnDebugRaw(activeSession.agent.streamFn);
+
       try {
         const prior = await sanitizeSessionHistory({
           messages: activeSession.messages,
@@ -1525,6 +1537,11 @@ export async function runEmbeddedAttempt(
         }
 
         log.debug(`embedded run prompt start: runId=${params.runId} sessionId=${params.sessionId}`);
+        debugPrint("prompt start", {
+          runId: params.runId,
+          sessionId: params.sessionId,
+          promptLength: effectivePrompt.length,
+        });
         cacheTrace?.recordStage("prompt:before", {
           prompt: effectivePrompt,
           messages: activeSession.messages,
@@ -1632,9 +1649,15 @@ export async function runEmbeddedAttempt(
           promptError = err;
           promptErrorSource = "prompt";
         } finally {
+          const durationMs = Date.now() - promptStartedAt;
           log.debug(
-            `embedded run prompt end: runId=${params.runId} sessionId=${params.sessionId} durationMs=${Date.now() - promptStartedAt}`,
+            `embedded run prompt end: runId=${params.runId} sessionId=${params.sessionId} durationMs=${durationMs}`,
           );
+          debugPrint("prompt end", {
+            runId: params.runId,
+            sessionId: params.sessionId,
+            durationMs,
+          });
         }
 
         // Capture snapshot before compaction wait so we have complete messages if timeout occurs

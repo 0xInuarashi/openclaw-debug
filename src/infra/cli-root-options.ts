@@ -1,6 +1,6 @@
 export const FLAG_TERMINATOR = "--";
 
-const ROOT_BOOLEAN_FLAGS = new Set(["--dev", "--no-color"]);
+const ROOT_BOOLEAN_FLAGS = new Set(["--dev", "--no-color", "--debug", "--raw", "--tool-confirm"]);
 const ROOT_VALUE_FLAGS = new Set(["--profile", "--log-level"]);
 
 export function isValueToken(arg: string | undefined): boolean {

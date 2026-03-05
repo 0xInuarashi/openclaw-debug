@@ -1,4 +1,5 @@
 import type { Command } from "commander";
+import { agentChatCommand } from "../../commands/agent-chat.js";
 import { agentCliCommand } from "../../commands/agent-via-gateway.js";
 import {
   agentsAddCommand,
@@ -79,6 +80,41 @@ ${theme.muted("Docs:")} ${formatDocsLink("/cli/agent", "docs.openclaw.ai/cli/age
       const deps = createDefaultDeps();
       await runCommandWithRuntime(defaultRuntime, async () => {
         await agentCliCommand(opts, defaultRuntime, deps);
+      });
+    });
+
+  program
+    .command("chat")
+    .description(
+      "Start a persistent interactive chat session with the embedded agent (runs locally)",
+    )
+    .option("--session-id <id>", "Resume an existing session by id (auto-generated if omitted)")
+    .option("--agent <id>", "Agent id (overrides routing bindings)")
+    .option("--thinking <level>", "Thinking level: off | minimal | low | medium | high")
+    .addHelpText(
+      "after",
+      () =>
+        `
+${theme.heading("Examples:")}
+${formatHelpExamples([
+  ["openclaw chat", "Start a new chat session."],
+  ["openclaw chat --agent ops --thinking low", "Chat with a specific agent."],
+  ["openclaw --debug --raw --tool-confirm chat", "Chat with all debug flags enabled."],
+  ["openclaw chat --session-id <uuid>", "Resume a previous session."],
+])}`,
+    )
+    .action(async (opts) => {
+      const deps = createDefaultDeps();
+      await runCommandWithRuntime(defaultRuntime, async () => {
+        await agentChatCommand(
+          {
+            sessionId: opts.sessionId,
+            agentId: opts.agent,
+            thinking: opts.thinking,
+          },
+          defaultRuntime,
+          deps,
+        );
       });
     });
 

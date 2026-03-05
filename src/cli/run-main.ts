@@ -1,5 +1,6 @@
 import process from "node:process";
 import { fileURLToPath } from "node:url";
+import { setDebugMode, setRawMode, setToolConfirm } from "../globals.js";
 import { loadDotEnv } from "../infra/dotenv.js";
 import { normalizeEnv } from "../infra/env.js";
 import { formatUncaughtError } from "../infra/errors.js";
@@ -8,7 +9,12 @@ import { ensureOpenClawCliOnPath } from "../infra/path-env.js";
 import { assertSupportedRuntime } from "../infra/runtime-guard.js";
 import { installUnhandledRejectionHandler } from "../infra/unhandled-rejections.js";
 import { enableConsoleCapture } from "../logging.js";
-import { getCommandPathWithRootOptions, getPrimaryCommand, hasHelpOrVersion } from "./argv.js";
+import {
+  getCommandPathWithRootOptions,
+  getPrimaryCommand,
+  hasHelpOrVersion,
+  hasFlag,
+} from "./argv.js";
 import { applyCliProfileEnv, parseCliProfileArgs } from "./profile.js";
 import { tryRouteCli } from "./route.js";
 import { normalizeWindowsArgv } from "./windows-argv.js";
@@ -72,6 +78,16 @@ export async function runCli(argv: string[] = process.argv) {
     applyCliProfileEnv({ profile: parsedProfile.profile });
   }
   normalizedArgv = parsedProfile.argv;
+
+  if (hasFlag(normalizedArgv, "--debug")) {
+    setDebugMode(true);
+  }
+  if (hasFlag(normalizedArgv, "--raw")) {
+    setRawMode(true);
+  }
+  if (hasFlag(normalizedArgv, "--tool-confirm")) {
+    setToolConfirm(true);
+  }
 
   loadDotEnv({ quiet: true });
   normalizeEnv();
